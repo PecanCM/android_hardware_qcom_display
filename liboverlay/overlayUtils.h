@@ -145,10 +145,12 @@ enum { INPUT_3D_MASK = 0xFFFF0000,
 enum { BARRIER_LAND = 1,
     BARRIER_PORT = 2 };
 
+#ifndef NO_HW_OVERLAY
 /* if SurfaceFlinger process gets killed in bypass mode, In initOverlay()
  * close all the pipes if it is opened after reboot.
  */
 int initOverlay(void);
+	#endif
 
 inline uint32_t format3D(uint32_t x) { return x & 0xFF000; }
 inline uint32_t colorFormat(uint32_t fmt) {
@@ -556,12 +558,18 @@ inline bool isYuv(uint32_t format) {
         case MDP_Y_CBCR_H2V1:
         case MDP_Y_CBCR_H2V2:
         case MDP_Y_CRCB_H2V2:
+#ifndef QCOM_MISSING_PIXEL_FORMATS
         case MDP_Y_CRCB_H1V1:
+#endif
         case MDP_Y_CRCB_H2V1:
+#ifndef QCOM_MISSING_PIXEL_FORMATS
         case MDP_Y_CRCB_H2V2_TILE:
         case MDP_Y_CBCR_H2V2_TILE:
+#endif
         case MDP_Y_CR_CB_H2V2:
+#ifndef QCOM_MISSING_PIXEL_FORMATS
         case MDP_Y_CR_CB_GH2V2:
+#endif
             return true;
         default:
             return false;
@@ -703,14 +711,18 @@ inline int getMdpOrient(eTransform rotation) {
 
 inline int getRotOutFmt(uint32_t format) {
     switch (format) {
+#ifndef QCOM_MISSING_PIXEL_FORMATS
         case MDP_Y_CRCB_H2V2_TILE:
             return MDP_Y_CRCB_H2V2;
         case MDP_Y_CBCR_H2V2_TILE:
             return MDP_Y_CBCR_H2V2;
+#endif
         case MDP_Y_CB_CR_H2V2:
             return MDP_Y_CBCR_H2V2;
+#ifndef QCOM_MISSING_PIXEL_FORMATS
         case MDP_Y_CR_CB_GH2V2:
             return MDP_Y_CRCB_H2V2;
+#endif
         default:
             return format;
     }

@@ -1,5 +1,6 @@
-ifneq ($(filter msm8960,$(TARGET_BOARD_PLATFORM)),)
-ifeq ($(TARGET_QCOM_DISPLAY_VARIANT),)
+ifeq ($(BOARD_USES_QCOM_HARDWARE),true)
+ifeq ($(TARGET_QCOM_DISPLAY_VARIANT),legacy)
+
 display-hals := libgralloc libgenlock libcopybit
 display-hals += libhwcomposer liboverlay libqdutils libexternal libqservice
 ifneq ($(TARGET_PROVIDES_LIBLIGHT),true)

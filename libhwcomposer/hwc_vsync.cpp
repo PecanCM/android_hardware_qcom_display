@@ -74,6 +74,7 @@ static void *vsync_loop(void *param)
     do {
         pthread_mutex_lock(&ctx->vstate.lock);
         while (ctx->vstate.enable == false) {
+#ifndef NO_HW_VSYNC
             if(enabled) {
                 int e = 0;
                 if(ioctl(ctx->dpyAttr[dpy].fd, MSMFB_OVERLAY_VSYNC_CTRL,
@@ -84,10 +85,12 @@ static void *vsync_loop(void *param)
                 }
                 enabled = false;
             }
+#endif
             pthread_cond_wait(&ctx->vstate.cond, &ctx->vstate.lock);
         }
         pthread_mutex_unlock(&ctx->vstate.lock);
 
+#ifndef NO_HW_VSYNC
         if (!enabled) {
             int e = 1;
             if(ioctl(ctx->dpyAttr[dpy].fd, MSMFB_OVERLAY_VSYNC_CTRL,
@@ -98,6 +101,7 @@ static void *vsync_loop(void *param)
             }
             enabled = true;
         }
+#endif
 
        for(int i = 0; i < MAX_RETRY_COUNT; i++) {
            len = pread(fd_timestamp, vdata, MAX_DATA, 0);
