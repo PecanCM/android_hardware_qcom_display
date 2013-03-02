@@ -149,7 +149,6 @@ static int hwc_eventControl(struct hwc_composer_device* dev,
     private_module_t* m = reinterpret_cast<private_module_t*>(
                 ctx->mFbDev->common.module);
     switch(event) {
-#ifndef NO_HW_VSYNC
         case HWC_EVENT_VSYNC:
             if (value == prev_value){
                 //TODO see why HWC gets repeated events
@@ -157,9 +156,10 @@ static int hwc_eventControl(struct hwc_composer_device* dev,
                         __FUNCTION__, (value)?"ENABLED":"DISABLED");
             }
             temp = ctx->vstate.enable;
+#ifndef NO_HW_VSYNC
             if(ioctl(m->framebuffer->fd, MSMFB_OVERLAY_VSYNC_CTRL, &value) < 0)
                 ret = -errno;
-
+#endif
             /* vsync state change logic */
             if (value == 1) {
                 //unblock vsync thread
@@ -185,7 +185,6 @@ static int hwc_eventControl(struct hwc_composer_device* dev,
                 ret = ctx->mExtDisplay->enableHDMIVsync(value);
              }
            break;
-#endif
        case HWC_EVENT_ORIENTATION:
              ctx->deviceOrientation = value;
            break;
@@ -286,19 +285,10 @@ static int hwc_device_open(const struct hw_module_t* module, const char* name,
         methods->eventControl = hwc_eventControl;
 
         dev->device.common.tag     = HARDWARE_DEVICE_TAG;
-#ifndef NO_HW_VSYNC
-        //XXX: This disables hardware vsync on 8x55
-        // Fix when HW vsync is available on 8x55
-        if(dev->mMDP.version == 400 || (dev->mMDP.version >= 500)) {
+#ifdef NO_HW_VSYNC
+        ALOGI("%s: Faking Hardware VSYNC", __FUNCTION__);
 #endif
-            dev->device.common.version = 0;
-            ALOGI("%s: Hardware VSYNC not supported", __FUNCTION__);
-#ifndef NO_HW_VSYNC
-        } else {
-            dev->device.common.version = HWC_DEVICE_API_VERSION_0_3;
-            ALOGI("%s: Hardware VSYNC supported", __FUNCTION__);
-        }
-#endif
+        dev->device.common.version = HWC_DEVICE_API_VERSION_0_3;
         dev->device.common.module  = const_cast<hw_module_t*>(module);
         dev->device.common.close   = hwc_device_close;
         dev->device.prepare        = hwc_prepare;
